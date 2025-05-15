@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const About = () => {
   const handleResumeDownload = () => {
     const link = document.createElement("a");
-    link.href = "/Shreyal resume.pdf"; // Path to the PDF in the public folder
+    link.href = "/Shreyal resume (1).pdf"; // Path to the PDF in the public folder
     link.download = "Shreyal resume.pdf";
     document.body.appendChild(link);
     link.click();
