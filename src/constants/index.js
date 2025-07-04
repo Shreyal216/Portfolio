@@ -1,6 +1,6 @@
 import project1 from "../assets/projects/project-1.jpg";
 import mouse from "../assets/projects/mouse.png";
-import portfolio from "../assets/projects/portfolio.png";
+import Screenshot 2025-07-04 202120 from "../assets/projects/Screenshot 2025-07-04 202120.png";
 
 
 export const HERO_CONTENT = `I am a passionate frontend developer skilled in creating dynamic, responsive, and user-friendly web interfaces. Proficient in Html, Css, Java, Javascript, Sql, React and Node.js, I focus on delivering seamless user experiences and visually engaging designs. My goal is to build innovative, high-performance applications that enhance user interaction and drive engagement.`;
@@ -28,7 +28,7 @@ export const PROJECTS = [
   },
   {
     title: "Portfolio Website",
-    image: portfolio,
+    image: Screenshot 2025-07-04 202120,
     description:
       "A personal portfolio website showcasing projects, skills, and contact information.",
     technologies: ["HTML", "CSS", "React", "Tailwind CSS","Javascript"],
