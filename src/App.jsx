@@ -5,7 +5,7 @@ import AboutMe from "./components/Aboutme";
 import Technologies from "./components/Technologies";
 import Projects from "./components/Projects";
 import Contact from "./components/Contact";
-import bgVideo from "./assets/space.mp4.mp4";
+import bgVideo from "./assets/video (1).mp4";
 
 const App = () => {
   const videoRef = useRef(null);
