@@ -1,54 +1,33 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import useCompactDevice from "../hooks/useCompactDevice";
 
+// Confine blur to viewport edges instead of rasterizing the entire page.
 const ScrollBlur = () => {
+  const compact = useCompactDevice();
+  const ref = useRef(null);
   useEffect(() => {
-    const content = document.getElementById("portfolio-content");
-    if (!content || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
-
-    let previousY = window.scrollY;
-    let previousTime = performance.now();
-    let frame = 0;
-    let settleTimer;
-    let blur = 0;
-
-    const renderBlur = () => {
-      content.style.setProperty("--scroll-blur", `${blur.toFixed(2)}px`);
+    const overlay = ref.current;
+    if (!overlay || compact) return undefined;
+    let timer;
+    let active = false;
+    const onScroll = () => {
+      if (!active) {
+        active = true;
+        overlay.dataset.active = "true";
+      }
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        active = false;
+        delete overlay.dataset.active;
+      }, 150);
     };
-
-    const settle = () => {
-      cancelAnimationFrame(frame);
-      const decay = () => {
-        blur *= 0.84;
-        if (blur < 0.04) blur = 0;
-        renderBlur();
-        if (blur > 0) frame = requestAnimationFrame(decay);
-      };
-      frame = requestAnimationFrame(decay);
-    };
-
-    const handleScroll = () => {
-      const now = performance.now();
-      const y = window.scrollY;
-      const elapsed = Math.max(8, now - previousTime);
-      const speed = Math.abs(y - previousY) / elapsed;
-      previousY = y;
-      previousTime = now;
-      blur = Math.min(2.6, Math.max(0.35, speed * 1.7));
-      renderBlur();
-      clearTimeout(settleTimer);
-      settleTimer = window.setTimeout(settle, 75);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-      clearTimeout(settleTimer);
-      cancelAnimationFrame(frame);
-      content.style.removeProperty("--scroll-blur");
+      clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+      delete overlay.dataset.active;
     };
-  }, []);
-
-  return null;
+  }, [compact]);
+  return compact ? null : <div ref={ref} className="scroll-edge-blur" aria-hidden="true"><span /><span /></div>;
 };
-
 export default ScrollBlur;

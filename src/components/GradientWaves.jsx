@@ -151,7 +151,11 @@ const GradientWaves = ({
   parallaxStrength = 0.5,
   grain = true,
   grainIntensity = 0.05,
-  className = ''
+  className = '',
+  pixelRatio = 1.5,
+  maxFps = 60,
+  pauseOnScroll = false,
+  frozen = false
 }) => {
   const containerRef = useRef(null);
   const enableMouseRef = useRef(mouseInteraction);
@@ -165,7 +169,7 @@ const GradientWaves = ({
       alpha: true,
       premultipliedAlpha: true,
       antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
+      dpr: Math.min(window.devicePixelRatio || 1, pixelRatio)
     });
 
     const gl = renderer.gl;
@@ -244,8 +248,17 @@ const GradientWaves = ({
     let isVisible = true;
     let isPageVisible = !document.hidden;
     const t0 = performance.now();
+    let lastRender = 0;
+    let scrolling = false;
+    let scrollTimer;
 
     const loop = t => {
+      raf = 0;
+      if (t - lastRender < 1000 / maxFps) {
+        raf = requestAnimationFrame(loop);
+        return;
+      }
+      lastRender = t;
       program.uniforms.iTime.value = (t - t0) * 0.001;
       const tx = enableMouseRef.current ? targetMouse[0] : 0.5;
       const ty = enableMouseRef.current ? targetMouse[1] : 0.5;
@@ -254,11 +267,11 @@ const GradientWaves = ({
       program.uniforms.uMouse.value[0] = currentMouse[0];
       program.uniforms.uMouse.value[1] = currentMouse[1];
       renderer.render({ scene: mesh });
-      raf = requestAnimationFrame(loop);
+      if (!frozen) raf = requestAnimationFrame(loop);
     };
 
     const tryStart = () => {
-      if (isVisible && isPageVisible && raf === 0) raf = requestAnimationFrame(loop);
+      if (isVisible && isPageVisible && !scrolling && raf === 0) raf = requestAnimationFrame(loop);
     };
     const tryStop = () => {
       if (raf !== 0) {
@@ -281,11 +294,20 @@ const GradientWaves = ({
       isPageVisible ? tryStart() : tryStop();
     };
     document.addEventListener('visibilitychange', onVisibility);
+    const onScroll = () => {
+      scrolling = true;
+      tryStop();
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => { scrolling = false; tryStart(); }, 180);
+    };
+    if (pauseOnScroll) window.addEventListener('scroll', onScroll, { passive: true });
 
     tryStart();
 
     return () => {
       tryStop();
+      clearTimeout(scrollTimer);
+      window.removeEventListener('scroll', onScroll);
       ro.disconnect();
       io.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
@@ -297,7 +319,7 @@ const GradientWaves = ({
       } catch {}
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, []);
+  }, [pixelRatio, maxFps, pauseOnScroll, frozen]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -361,7 +383,8 @@ const GradientWaves = ({
     grain,
     grainIntensity,
     mouseInteraction,
-    parallaxStrength
+    parallaxStrength,
+    pixelRatio, maxFps, pauseOnScroll, frozen
   ]);
 
   return <div ref={containerRef} className={`gradient-waves-container ${className}`.trim()} />;

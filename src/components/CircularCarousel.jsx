@@ -179,6 +179,7 @@ const CircularCarousel = ({
   preset = 'cylinder',
   intro = 'rise',
   cardWidth = 220,
+  tileCount = TILES,
   aspectRatio = 1,
   gap = 25,
   curve,
@@ -228,7 +229,7 @@ const CircularCarousel = ({
   }, [count, along, gap, curveValue, layout.spread]);
 
   const tiles = useMemo(() => {
-    const total = curveValue > 0.001 ? TILES : 1;
+    const total = curveValue > 0.001 ? Math.max(1, tileCount) : 1;
     const length = along / total;
     const bend = curveValue > 0.001 ? radius / curveValue : 0;
     return Array.from({ length: total }, (_, index) => {
@@ -246,7 +247,7 @@ const CircularCarousel = ({
           : `translate3d(${shift}px, 0px, ${depth}px) rotateY(${turn}deg)`;
       return { index, total, start, end, size: end - start, move };
     });
-  }, [along, axis, curveValue, layout.inward, radius]);
+  }, [along, axis, curveValue, layout.inward, radius, tileCount]);
 
   const rootRef = useRef(null);
   const stageRef = useRef(null);
@@ -360,6 +361,8 @@ const CircularCarousel = ({
     const state = stateRef.current;
     let raf = 0;
     let visible = true;
+    let scrolling = false;
+    let scrollTimer;
 
     const nearest = angle => Math.round(angle / settingsRef.current.step) * settingsRef.current.step;
 
@@ -483,7 +486,7 @@ const CircularCarousel = ({
         const tau = 0.18 + s.momentum * 1.5;
         state.velocity += (cruise - state.velocity) * (1 - Math.exp(-dt / tau));
         state.angle += state.velocity * dt;
-        if (cruise === 0 && s.snap && Math.abs(state.velocity) < SETTLE_SPEED) {
+        if (cruise === 0 && s.snap && Math.abs(state.velocity) < SETTLE_SPEED && Math.abs(nearest(state.angle) - state.angle) > 0.004) {
           state.target = nearest(state.angle);
         }
         busy = busy || cruise !== 0 || Math.abs(state.velocity) > 0.01 || state.target !== null;
@@ -572,6 +575,11 @@ const CircularCarousel = ({
 
     const frame = now => {
       raf = 0;
+      if (!visible || document.hidden || scrolling) { state.last = 0; return; }
+      if (state.last && now - state.last < 1000 / 60 - 0.5) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
       const s = settingsRef.current;
       const dt = state.last ? Math.min((now - state.last) / 1000, 0.05) : 1 / 60;
       state.last = now;
@@ -582,9 +590,19 @@ const CircularCarousel = ({
     };
 
     const wake = () => {
-      if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame);
+      if (!raf && visible && !document.hidden && !scrolling) raf = requestAnimationFrame(frame);
     };
     wakeRef.current = wake;
+
+    const onScroll = () => {
+      scrolling = true;
+      cancelAnimationFrame(raf);
+      raf = 0;
+      state.last = 0;
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => { scrolling = false; wake(); }, 180);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
 
     const onVisibility = () => {
       if (document.hidden) {
@@ -642,6 +660,8 @@ const CircularCarousel = ({
       io.disconnect();
       clearTimeout(state.wheelTimer);
       root.removeEventListener('wheel', onWheel);
+      clearTimeout(scrollTimer);
+      window.removeEventListener('scroll', onScroll);
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);

@@ -5,7 +5,7 @@ const Projects = () => {
     <div id="projects" className="border-b border-neutral-900 pb-4 scroll-mt-24">
       <motion.h2
       
-      whileInView={{ opacity: 1,y: 0 }}
+      viewport={{ once: true, amount: 0.12 }} whileInView={{ opacity: 1,y: 0 }}
         initial={{ opacity: 0, y: -100 }}
         transition={{ duration: 1 }}
 
@@ -15,10 +15,10 @@ const Projects = () => {
           <div key={index} className="mb-8 flex flex-wrap lg:justify-center">
             <div className="w-full lg:w-1/4">
               <motion.img
-                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.12 }} whileInView={{ opacity: 1, x: 0 }}
                 initial={{ opacity: 0, x: -100 }}
                 transition={{ duration: 1.5 }}
-                src={projects.image}
+                loading="lazy" decoding="async" src={projects.image}
                 width={200}
                 height={200}
                 alt={projects.title}
@@ -26,7 +26,7 @@ const Projects = () => {
               />
             </div>
             <motion.div
-              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.12 }} whileInView={{ opacity: 1, x: 0 }}
               initial={{ opacity: 0, x: 100 }}
               transition={{ duration: 1.5 }}
               className="w-full max-w-xl lg:w-3/4">
@@ -36,7 +36,7 @@ const Projects = () => {
               {projects.technologies.map((tech, index) => (
                 <span
                   key={index}
-                  className="mr-2 mt-4 rounded bg-neutral-900 px-2 py-1 text-sm font-medium text-purple-800"
+                  className="inline-block mr-2 mt-2 rounded bg-neutral-900 px-2 py-1 text-sm font-medium text-purple-800"
                 >
                   {tech}
                 </span>
@@ -50,3 +50,4 @@ const Projects = () => {
 };
 
 export default Projects;
+

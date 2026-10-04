@@ -6,11 +6,11 @@ import logo from "../assets/shreyal1.png";
 
 const Navbar = () => {
   return (
-    <nav className="mb-20 flex items-center justify-between py-6">
+    <nav className="flex items-center justify-between py-6">
       <div className="flex flex-shrink-0 items-center">
         <img src={logo} alt="logo" className="h-12" />
       </div>
-      <div className="m-8 flex items-center justify-center gap-4 text-2xl">
+      <div className="nav-socials flex items-center justify-center gap-2 text-xl sm:gap-4 sm:text-2xl">
         <a href="https://www.linkedin.com/in/shreyalsinh-raj2107/" target="_blank" rel="noopener noreferrer">
           <FaLinkedin />
         </a>

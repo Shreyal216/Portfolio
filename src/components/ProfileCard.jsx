@@ -1,12 +1,12 @@
 import { useRef } from "react";
 import profilepic from "../assets/profilepic.jpg";
 
-const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 const ProfileCard = () => {
   const cardRef = useRef(null);
 
   const handlePointerMove = (event) => {
+    if (event.pointerType !== 'mouse') return;
     const card = cardRef.current;
     if (!card) return;
     const bounds = card.getBoundingClientRect();
@@ -37,28 +37,11 @@ const ProfileCard = () => {
     card.classList.remove("profile-card-active");
   };
 
-  const handleTouchMove = (event) => {
-    const touch = event.touches[0];
-    if (!touch) return;
-    const card = cardRef.current;
-    if (!card) return;
-    const bounds = card.getBoundingClientRect();
-    const x = clamp((touch.clientX - bounds.left) / bounds.width, 0, 1);
-    const y = clamp((touch.clientY - bounds.top) / bounds.height, 0, 1);
-    card.style.setProperty("--pointer-x", `${x * 100}%`);
-    card.style.setProperty("--pointer-y", `${y * 100}%`);
-    card.parentElement?.style.setProperty("--pointer-x", `${x * 100}%`);
-    card.parentElement?.style.setProperty("--pointer-y", `${y * 100}%`);
-    card.style.setProperty("--rotate-y", `${(x - 0.5) * 12}deg`);
-    card.style.setProperty("--rotate-x", `${(0.5 - y) * 12}deg`);
-    card.classList.add("profile-card-active");
-  };
-
   return (
     <div className="profile-card-scene">
       <div className="profile-card-glow" />
-      <article ref={cardRef} className="profile-card" onPointerMove={handlePointerMove} onPointerLeave={resetCard} onTouchMove={handleTouchMove} onTouchEnd={resetCard}>
-        <div className="profile-card-image-wrap"><img src={profilepic} alt="Shreyalsinh Raj" className="profile-card-image" /></div>
+      <article ref={cardRef} className="profile-card" onPointerMove={handlePointerMove} onPointerLeave={resetCard}>
+        <div className="profile-card-image-wrap"><img src={profilepic} alt="Shreyalsinh Raj" loading="lazy" decoding="async" className="profile-card-image" /></div>
         <div className="profile-card-grain" />
         <div className="profile-card-sheen" />
         <div className="profile-card-topline"><span>PROFILE / 01</span><span>INDIA ↗</span></div>
@@ -70,3 +53,4 @@ const ProfileCard = () => {
 };
 
 export default ProfileCard;
+

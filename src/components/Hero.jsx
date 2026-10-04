@@ -1,29 +1,44 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { HERO_CONTENT } from "../constants";
+import RobotScene from "./RobotScene";
+import useCompactDevice from "../hooks/useCompactDevice";
 
 const Hero = () => {
+  const compact = useCompactDevice();
   const ref = useRef(null);
+  const proximityFrame = useRef(0);
+  const pointer = useRef(null);
+  useEffect(() => () => cancelAnimationFrame(proximityFrame.current), []);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const sceneY = useTransform(scrollYProgress, [0, 1], [0, 170]);
   const sceneRotate = useTransform(scrollYProgress, [0, 1], [0, -16]);
   const sceneScale = useTransform(scrollYProgress, [0, 1], [1, 0.76]);
 
   const updateProximity = (event) => {
-    const radius = 180;
-    event.currentTarget.querySelectorAll("[data-proximity-letter]").forEach((letter) => {
-      const rect = letter.getBoundingClientRect();
-      const dx = event.clientX - (rect.left + rect.width / 2);
-      const dy = event.clientY - (rect.top + rect.height / 2);
-      const distance = Math.hypot(dx, dy);
-      const proximity = Math.max(0, 1 - distance / radius);
-      const eased = proximity * proximity * (3 - 2 * proximity);
-      letter.style.setProperty("--letter-weight", `${500 + eased * 420}`);
-      letter.style.setProperty("--letter-lift", `${-eased * 5}px`);
+    if (compact) return;
+    pointer.current = { x: event.clientX, y: event.clientY, heading: event.currentTarget };
+    if (proximityFrame.current) return;
+    proximityFrame.current = requestAnimationFrame(() => {
+      proximityFrame.current = 0;
+      const { x, y, heading } = pointer.current;
+      // Read all geometry before changing font weights to avoid repeated layouts.
+      const letters = Array.from(heading.querySelectorAll("[data-proximity-letter]"));
+      const bounds = letters.map(letter => letter.getBoundingClientRect());
+      letters.forEach((letter, index) => {
+        const rect = bounds[index];
+        const distance = Math.hypot(x - rect.left - rect.width / 2, y - rect.top - rect.height / 2);
+        const proximity = Math.max(0, 1 - distance / 180);
+        const eased = proximity * proximity * (3 - 2 * proximity);
+        letter.style.setProperty("--letter-weight", `${500 + eased * 420}`);
+        letter.style.setProperty("--letter-lift", `${-eased * 5}px`);
+      });
     });
   };
 
   const resetProximity = (event) => {
+    cancelAnimationFrame(proximityFrame.current);
+    proximityFrame.current = 0;
     event.currentTarget.querySelectorAll("[data-proximity-letter]").forEach((letter) => {
       letter.style.setProperty("--letter-weight", "500");
       letter.style.setProperty("--letter-lift", "0px");
@@ -37,9 +52,9 @@ const Hero = () => {
   ));
 
   return (
-    <section ref={ref} className="hero-stage relative flex min-h-[88vh] items-center border-b border-white/10 py-20 lg:min-h-[calc(100vh-7rem)]">
+    <section ref={ref} className="hero-stage relative flex items-center border-b border-white/10 pt-10 pb-20">
       <div className="grid w-full items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
-        <div className="relative z-10">
+        <div className="relative z-10 min-w-0">
           <motion.p className="eyebrow" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .2 }}>
             <span className="status-dot" /> SOFTWARE DEVELOPER <span className="text-white/30">/</span> VADODARA, INDIA
           </motion.p>
@@ -60,21 +75,9 @@ const Hero = () => {
           </motion.div>
         </div>
 
-        <div className="hero-scene-wrap" aria-label="Interactive dimensional abstract orbital artwork">
-          <motion.div className="hero-scene" style={{ y: sceneY, rotateX: sceneRotate, scale: sceneScale }}>
-            <div className="scene-grid" />
-            <div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="orbit orbit-three" />
-            <motion.div className="core-sphere" animate={{ y: [0, -13, 0], rotateY: [0, 18, 0] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}>
-              <div className="sphere-shine" /><div className="sphere-line" />
-            </motion.div>
-            <motion.div className="satellite satellite-one" animate={{ y: [0, -8, 0] }} transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }} />
-            <motion.div className="satellite satellite-two" animate={{ y: [0, 9, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} />
-            <div className="scene-label label-top"><span>CREATIVE ENGINEERING</span><i>↗</i></div>
-            <div className="scene-label label-bottom"><span>BUILDING WHAT’S NEXT</span><i>IND / 22°18′</i></div>
-            <div className="scene-index">SR <span>—</span> 01</div>
-          </motion.div>
-          <span className="scene-caption">A little motion. A lot of intention.</span>
-        </div>
+        <motion.div className="min-w-0" style={compact ? undefined : { y: sceneY, rotateX: sceneRotate, scale: sceneScale }}>
+          <RobotScene />
+        </motion.div>
       </div>
       <a href="#experience" className="scroll-cue"><span /> SCROLL TO EXPLORE</a>
     </section>
