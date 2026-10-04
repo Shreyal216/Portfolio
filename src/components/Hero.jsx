@@ -1,159 +1,56 @@
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 import { HERO_CONTENT } from "../constants";
-import devloper from "../assets/devloper.png";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
-
-const container = (delay) => ({
-  hidden: { x: -100, opacity: 0 },
-  visible: {
-    x: 0,
-    opacity: 1,
-    transition: { duration: 1.5, delay: delay },
-  },
-});
-
-const TITLES = ["Software Developer", "Frontend Developer", "Backend Developer"];
-
-const getLetterVariants = (title) => {
-  switch (title) {
-    case "Software Developer":
-      return {
-        initial: { opacity: 0, x: -10 },
-        animate: (i) => ({
-          opacity: 1,
-          x: 0,
-          transition: { delay: i * 0.05 },
-        }),
-        exit: (i) => ({
-          opacity: 0,
-          x: 10,
-          transition: { delay: i * 0.03 },
-        }),
-      };
-    case "Frontend Developer":
-      return {
-        initial: { opacity: 0, scale: 0.8, rotate: -15 },
-        animate: (i) => ({
-          opacity: 1,
-          scale: 1,
-          rotate: 0,
-          transition: { delay: i * 0.06 },
-        }),
-        exit: (i) => ({
-          opacity: 0,
-          scale: 0.8,
-          rotate: 15,
-          transition: { delay: i * 0.03 },
-        }),
-      };
-    case "Backend Developer":
-      return {
-        initial: { opacity: 0, y: 10 },
-        animate: (i) => ({
-          opacity: 1,
-          y: 0,
-          transition: { delay: i * 0.05 },
-        }),
-        exit: (i) => ({
-          opacity: 0,
-          y: -10,
-          transition: { delay: i * 0.02 },
-        }),
-      };
-    default:
-      return {
-        initial: { opacity: 0 },
-        animate: (i) => ({ opacity: 1, transition: { delay: i * 0.05 } }),
-        exit: (i) => ({ opacity: 0, transition: { delay: i * 0.03 } }),
-      };
-  }
-};
 
 const Hero = () => {
-  const [index, setIndex] = useState(0);
-  const [showTitle, setShowTitle] = useState(true);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setShowTitle(false); // trigger exit
-      setTimeout(() => {
-        setIndex((prev) => (prev + 1) % TITLES.length);
-        setShowTitle(true); // trigger enter
-      }, 600); // allow exit to finish
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const currentTitle = TITLES[index];
-  const letters = currentTitle.split("");
-  const variants = getLetterVariants(currentTitle);
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const sceneY = useTransform(scrollYProgress, [0, 1], [0, 170]);
+  const sceneRotate = useTransform(scrollYProgress, [0, 1], [0, -16]);
+  const sceneScale = useTransform(scrollYProgress, [0, 1], [1, 0.76]);
 
   return (
-    <div className="border-b border-neutral-900 pb-8 lg:mb-35">
-      <div className="flex flex-wrap">
-        <div className="w-full lg:w-1/2">
-          <div className="flex flex-col items-center lg:items-start px-4">
-            <motion.h1
-              variants={container(0)}
-              initial="hidden"
-              animate="visible"
-              className="pb-8 text-5xl lg:text-8xl font-thin tracking-tight lg:mt-16"
-            >
-              Shreyalsinh Raj
-            </motion.h1>
-
-            {/* Dynamic Letter-by-Letter Title */}
-            <div className="text-3xl md:text-4xl font-semibold tracking-tight bg-gradient-to-r from-pink-300 via-slate-500 to-purple-500 bg-clip-text text-transparent h-12">
-              <AnimatePresence mode="wait">
-                {showTitle && (
-                  <motion.div
-                    key={currentTitle}
-                    className="flex"
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                  >
-                    {letters.map((char, i) => (
-                      <motion.span
-                        key={i}
-                        custom={i}
-                        variants={variants}
-                        className="inline-block"
-                      >
-                        {char === " " ? "\u00A0" : char}
-                      </motion.span>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <motion.p
-              variants={container(1.5)}
-              initial="hidden"
-              animate="visible"
-              className="my-2 max-w-xl py-6 font-light tracking-tighter"
-            >
-              {HERO_CONTENT}
-            </motion.p>
-          </div>
+    <section ref={ref} className="hero-stage relative flex min-h-[88vh] items-center border-b border-white/10 py-20 lg:min-h-[calc(100vh-7rem)]">
+      <div className="grid w-full items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
+        <div className="relative z-10">
+          <motion.p className="eyebrow" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .2 }}>
+            <span className="status-dot" /> SOFTWARE DEVELOPER <span className="text-white/30">/</span> VADODARA, INDIA
+          </motion.p>
+          <motion.h1 className="hero-title mt-7" initial={{ opacity: 0, y: 36 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8, ease: [.22, 1, .36, 1] }}>
+            Shreyalsinh<br /><span>Raj<span className="hero-period">.</span></span>
+          </motion.h1>
+          <motion.p className="mt-7 max-w-xl text-base leading-8 text-slate-300/70 md:text-lg" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .3, duration: .7 }}>
+            {HERO_CONTENT}
+          </motion.p>
+          <motion.div className="mt-9 flex flex-wrap items-center gap-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .65 }}>
+            <a className="button-primary" href="#projects">Explore my work <span>↗</span></a>
+            <a className="button-quiet" href="#contact">Let’s connect <span>↓</span></a>
+          </motion.div>
+          <motion.div className="mt-14 flex gap-9 text-sm text-white/50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .8 }}>
+            <div><strong className="block text-2xl font-medium text-white">08.58</strong>CGPA / 10</div>
+            <div><strong className="block text-2xl font-medium text-white">2026</strong>IT graduate</div>
+            <div><strong className="block text-2xl font-medium text-white">01</strong>Current role</div>
+          </motion.div>
         </div>
 
-        <div className="w-full lg:w-1/2 lg:p-8">
-          <div className="flex justify-center">
-            <motion.img
-              initial={{ x: 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 1.2 }}
-              src={devloper}
-              alt="Shreyalsinh Raj"
-              className="rounded-2xl w-50 h-50 md:w-70 md:h-70"
-            />
-          </div>
+        <div className="hero-scene-wrap" aria-label="Interactive dimensional abstract orbital artwork">
+          <motion.div className="hero-scene" style={{ y: sceneY, rotateX: sceneRotate, scale: sceneScale }}>
+            <div className="scene-grid" />
+            <div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="orbit orbit-three" />
+            <motion.div className="core-sphere" animate={{ y: [0, -13, 0], rotateY: [0, 18, 0] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}>
+              <div className="sphere-shine" /><div className="sphere-line" />
+            </motion.div>
+            <motion.div className="satellite satellite-one" animate={{ y: [0, -8, 0] }} transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }} />
+            <motion.div className="satellite satellite-two" animate={{ y: [0, 9, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} />
+            <div className="scene-label label-top"><span>CREATIVE ENGINEERING</span><i>↗</i></div>
+            <div className="scene-label label-bottom"><span>BUILDING WHAT’S NEXT</span><i>IND / 22°18′</i></div>
+            <div className="scene-index">SR <span>—</span> 01</div>
+          </motion.div>
+          <span className="scene-caption">A little motion. A lot of intention.</span>
         </div>
       </div>
-    </div>
+      <a href="#experience" className="scroll-cue"><span /> SCROLL TO EXPLORE</a>
+    </section>
   );
 };
 

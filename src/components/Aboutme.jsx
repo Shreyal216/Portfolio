@@ -1,6 +1,6 @@
-import profilepic from "../assets/profilepic.jpg";
 import { ABOUT_TEXT } from "../constants";
 import { motion } from "framer-motion";
+import ProfileCard from "./ProfileCard";
 
 const About = () => {
   const handleResumeDownload = () => {
@@ -29,8 +29,8 @@ const About = () => {
           transition={{ duration: 1.5 }}
           className="w-full lg:w-1/2 lg:p-8"
         >
-          <div className="flex item-center justify-center">
-            <img className="rounded-2xl w-70 h-70 md:w-80 md:h-90" src={profilepic} alt="aboutme" />
+          <div className="flex items-center justify-center py-8">
+            <ProfileCard />
           </div>
         </motion.div>
         <motion.div
