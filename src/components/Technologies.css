@@ -1,0 +1,23 @@
+.technology-carousel-stage {
+  position: relative;
+  height: 560px;
+  overflow: hidden;
+}
+
+.technology-carousel-stage > .circular-carousel {
+  width: max(100%, 760px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.technology-carousel-hint {
+  margin-top: 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, .65);
+  font: 11px 'DM Mono', monospace;
+  line-height: 1.8;
+}
+
+@media (max-width: 767px) {
+  .technology-carousel-stage { height: 380px; }
+}

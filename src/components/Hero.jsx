@@ -9,6 +9,33 @@ const Hero = () => {
   const sceneRotate = useTransform(scrollYProgress, [0, 1], [0, -16]);
   const sceneScale = useTransform(scrollYProgress, [0, 1], [1, 0.76]);
 
+  const updateProximity = (event) => {
+    const radius = 180;
+    event.currentTarget.querySelectorAll("[data-proximity-letter]").forEach((letter) => {
+      const rect = letter.getBoundingClientRect();
+      const dx = event.clientX - (rect.left + rect.width / 2);
+      const dy = event.clientY - (rect.top + rect.height / 2);
+      const distance = Math.hypot(dx, dy);
+      const proximity = Math.max(0, 1 - distance / radius);
+      const eased = proximity * proximity * (3 - 2 * proximity);
+      letter.style.setProperty("--letter-weight", `${500 + eased * 420}`);
+      letter.style.setProperty("--letter-lift", `${-eased * 5}px`);
+    });
+  };
+
+  const resetProximity = (event) => {
+    event.currentTarget.querySelectorAll("[data-proximity-letter]").forEach((letter) => {
+      letter.style.setProperty("--letter-weight", "500");
+      letter.style.setProperty("--letter-lift", "0px");
+    });
+  };
+
+  const renderLetters = (text) => Array.from(text).map((character, index) => (
+    <span data-proximity-letter key={`${text}-${index}`} className={character === " " ? "hero-letter hero-letter-space" : "hero-letter"}>
+      {character === " " ? "\u00a0" : character}
+    </span>
+  ));
+
   return (
     <section ref={ref} className="hero-stage relative flex min-h-[88vh] items-center border-b border-white/10 py-20 lg:min-h-[calc(100vh-7rem)]">
       <div className="grid w-full items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
@@ -16,8 +43,8 @@ const Hero = () => {
           <motion.p className="eyebrow" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .2 }}>
             <span className="status-dot" /> SOFTWARE DEVELOPER <span className="text-white/30">/</span> VADODARA, INDIA
           </motion.p>
-          <motion.h1 className="hero-title mt-7" initial={{ opacity: 0, y: 36 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8, ease: [.22, 1, .36, 1] }}>
-            Shreyalsinh<br /><span>Raj<span className="hero-period">.</span></span>
+          <motion.h1 aria-label="Shreyalsinh Raj" onPointerMove={updateProximity} onPointerLeave={resetProximity} className="hero-title mt-7" initial={{ opacity: 0, y: 36 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8, ease: [.22, 1, .36, 1] }}>
+            <span className="hero-name-line">{renderLetters("Shreyalsinh")}</span><span className="hero-name-line hero-accent-line">{renderLetters("Raj")}<span className="hero-period">.</span></span>
           </motion.h1>
           <motion.p className="mt-7 max-w-xl text-base leading-8 text-slate-300/70 md:text-lg" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .3, duration: .7 }}>
             {HERO_CONTENT}
